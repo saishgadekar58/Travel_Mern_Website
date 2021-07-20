@@ -1,10 +1,12 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const DB =
-  "mongodb+srv://saishGadekar:35059076@travel-website.gw5ms.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const cookieParser = require("cookie-parser");
+const User = require("./models/user");
+const config = require("./config/key");
+
 mongoose
-  .connect(DB, {
+  .connect(config.mongoURI, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
@@ -13,12 +15,25 @@ mongoose
   .then(() => console.log("conn succesful"))
   .catch((error) => console.error(error));
 
-const port = process.env.PORT || 5000;
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("hello");
 });
 
+app.post("/api/users/register", (req, res) => {
+  const user = new User(req.body);
+  user.save((err, user) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).json({
+      success: true,
+    });
+  });
+});
+
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
   console.log(`running on port ${port}`);
 });
